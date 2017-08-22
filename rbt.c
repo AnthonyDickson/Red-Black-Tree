@@ -39,6 +39,7 @@ static rbt rbt_fix(rbt r);
 
 struct rbt_node {
     char *key;
+    int count;
     rbt_colour colour;
     rbt left;
     rbt right;
@@ -135,13 +136,16 @@ rbt rbt_insert(rbt r, char *key) {
         r = emalloc(sizeof *r);
         r->key = emalloc(strlen(key) + 1);
         strcpy(r->key, key);
+        r->count = 1;
         r->colour = RED;
         r->left = NULL;
         r->right = NULL;
     } else if (strcmp(key, r->key) < 0) {
         r->left = rbt_insert(r->left, key);
-    } else if (strcmp(key, r->key) > 0) {
+    } else if (strcmp(key, r->key) > 0 ) {
         r->right = rbt_insert(r->right, key);
+    } else {
+        r->count++;
     }
     
     return rbt_fix(r);
@@ -162,13 +166,15 @@ int rbt_search(rbt r, char *key) {
     if (comparison > 0) {
         return rbt_search(r->right, key);
     }
-    return 1; 
+
+    return r->count; 
 }
 
 rbt rbt_delete(rbt r, char *key) {
     int comparison;
     rbt temp, successor;
-    char *swap;
+    char *swap_key;
+    int swap_count;
     
     if (r == NULL) {
         return NULL;
@@ -181,16 +187,21 @@ rbt rbt_delete(rbt r, char *key) {
     } else if (comparison > 0) {    
         r->right = rbt_delete(r->right, key);
     } else {
-        if (r->left && r->right) {
+        if (r->count > 1) {
+            r->count--;
+        } else if (r->left && r->right) {
             successor = r->right;
             
             while(successor->left) {
                 successor = successor->left;
             }
 
-            swap = r->key;
+            swap_key = r->key;
+            swap_count = r->count;
             r->key = successor->key;
-            successor->key = swap;
+            r->count = successor->count;
+            successor->key = swap_key;
+            successor->count = swap_count;
             r->right = rbt_delete(r->right, key);
         } else if (r->left || r->right) { 
             temp = r;
@@ -204,25 +215,35 @@ rbt rbt_delete(rbt r, char *key) {
         }        
     } 
 
-    return rbt_fix(r);
+    return r;
 }
 
 void rbt_inorder(rbt r, void f(char *key, rbt_colour c)) {
+    int i;
+    
     if (r == NULL) {
         return;
     }
-
+    
     rbt_inorder(r->left, f);
-    f(r->key, r->colour);
+    
+    for (i = 0; i < r->count; i++) {
+        f(r->key, r->colour);
+    }    
+
     rbt_inorder(r->right, f);
 }
 
 void rbt_preorder(rbt r, void f(char *key, rbt_colour c)) {
+    int i;
+
     if (r == NULL) {
         return;
     }
-
-    f(r->key, r->colour);
+    
+    for (i = 0; i < r->count; i++) {
+        f(r->key, r->colour);
+    }
     rbt_preorder(r->left, f);
     rbt_preorder(r->right, f);
 }

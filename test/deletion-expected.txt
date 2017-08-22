@@ -93,8 +93,8 @@
 1 gentler
 1 swarthy
 1 disconnects
-1 factoring
-1 sequences
+2 factoring
+3 sequences
 1 tiring
 1 attendances
-0 unloaded
+1 unloaded

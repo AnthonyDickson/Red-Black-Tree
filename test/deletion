@@ -1,4 +1,4 @@
 gcc -W -Wall -ansi -pedantic -g -O2 test.c mylib.c rbt.c -o out/deletion-test
-time valgrind --leak-resolution=low out/deletion-test < test/rbt-deletion-test.txt > test/deletion-output.txt
+time valgrind -q out/deletion-test < test/deletion-test.txt > test/deletion-output.txt
 echo 
 diff test/deletion-expected.txt test/deletion-output.txt --strip-trailing-cr -s 

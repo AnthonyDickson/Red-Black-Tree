@@ -4,8 +4,7 @@
 /** Defines the node colours of a rbt. */
 typedef enum {RED, BLACK} rbt_colour;
 
-/** 
- * Defines a rbt node consisting of a String key, and two sub-rbt's. */
+/** Defines a rbt node. */
 typedef struct rbt_node *rbt;
 
 /** 
