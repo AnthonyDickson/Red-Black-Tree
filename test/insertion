@@ -1,0 +1,4 @@
+gcc -W -Wall -ansi -pedantic -O2 -g test.c mylib.c rbt.c -o out/insertion-test
+time valgrind --leak-check=summary ./out/insertion-test < test/rbt-insertion-test.txt > test/insertion-output.txt
+echo 
+diff test/insertion-expected.txt test/insertion-output.txt --strip-trailing-cr -s

@@ -1,0 +1,12 @@
+black: g
+red: d
+black: b
+red: a
+red: c
+black: f
+red: e
+red: i
+black: h
+black: k
+red: j
+red: l
