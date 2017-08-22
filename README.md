@@ -6,8 +6,4 @@ moment of reflection will confirm that this program could be used as a rudimenta
 Running the program with a command like this:
 ./asgn dictionary.txt < document.txt
 should print out a list of every word from document.txt which is not found in dictionary.txt.
-<<<<<<< HEAD
 If there is no output then document.txt has no misspelled words (as defined in dictionary.txt).
-=======
-If there is no output then document.txt has no misspelled words (as defined in dictionary.txt).
->>>>>>> Add README.md
