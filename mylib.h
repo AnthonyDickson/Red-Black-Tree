@@ -24,7 +24,7 @@ extern void *erealloc(void *p, size_t s);
  * @param char *s Where to read the word into.
  * @param int limit Maximum number of characters we should read.
  * @param FILE *stream The stream to read from.
- * @return Returns EOF if end of stream reached otherwise returns non-zero value.
+ * @return Returns EOF if end of stream reached or returns non-zero value.
  */
 extern int getword(char *s, int limit, FILE *stream);
 

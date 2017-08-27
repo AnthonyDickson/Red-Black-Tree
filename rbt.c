@@ -3,14 +3,14 @@
 #include "rbt.h"
 #include "mylib.h"
 
-/** MACROS *******************************************************************/
+/** MACROS ******************************************************************/
 
 #define IS_BLACK(x) ((NULL == (x) || (BLACK == (x)->colour)))
 #define IS_RED(x) ((NULL != (x) && (RED == (x)->colour)))
 
-/** ENDOF MACROS *************************************************************/
+/** ENDOF MACROS ************************************************************/
 
-/** FUNCTION DECLARATIONS ****************************************************/
+/** FUNCTION DECLARATIONS ***************************************************/
 
 /**
 * Performs a left rotation on a rbt.
@@ -35,7 +35,10 @@ static rbt right_rotate(rbt r);
 */
 static rbt rbt_fix(rbt r);
 
-/** ENDOF FUNCTION DECLARATIONS **********************************************/
+/** ENDOF FUNCTION DECLARATIONS *********************************************/
+
+/** This is a pointer to the root node of the tree. */
+static rbt ROOT_NODE = NULL;
 
 struct rbt_node {
     char *key;
@@ -50,6 +53,10 @@ rbt left_rotate(rbt r) {
      r = r->right;
      temp->right = r->left;
      r->left = temp;
+     
+     if (ROOT_NODE == temp) {
+         ROOT_NODE = r;
+     }
 
      return r;
 }
@@ -59,6 +66,10 @@ rbt right_rotate(rbt r) {
     r = r->left;
     temp->left = r->right;
     r->right = temp;
+
+    if (ROOT_NODE == temp) {
+        ROOT_NODE = r;
+    }
 
     return r;
 }
@@ -111,6 +122,10 @@ rbt rbt_fix(rbt r) {
             r->left->colour = RED;
         }
     }
+
+    if (r == ROOT_NODE) {
+        r->colour = BLACK;
+    }
     
     return r;
 }
@@ -140,6 +155,10 @@ rbt rbt_insert(rbt r, char *key) {
         r->colour = RED;
         r->left = NULL;
         r->right = NULL;
+        
+        if (ROOT_NODE == NULL) {
+            ROOT_NODE = r;
+        }
     } else if (strcmp(key, r->key) < 0) {
         r->left = rbt_insert(r->left, key);
     } else if (strcmp(key, r->key) > 0 ) {
@@ -197,18 +216,29 @@ rbt rbt_delete(rbt r, char *key) {
             }
 
             swap_key = r->key;
-            swap_count = r->count;
             r->key = successor->key;
-            r->count = successor->count;
             successor->key = swap_key;
+            
+            swap_count = r->count;
+            r->count = successor->count;
             successor->count = swap_count;
+
             r->right = rbt_delete(r->right, key);
         } else if (r->left || r->right) { 
             temp = r;
             r = (r->left) ? r->left : r->right;
+
+            if (temp == ROOT_NODE) {
+                ROOT_NODE = r;
+            }
+
             free(temp->key);
             free(temp);                
         } else {
+            if (r == ROOT_NODE) {
+                ROOT_NODE = NULL;
+            }
+
             free(r->key);
             free(r);
             r = NULL;     

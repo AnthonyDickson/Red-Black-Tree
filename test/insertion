@@ -1,4 +1,3 @@
-gcc -W -Wall -ansi -pedantic -O2 -g test.c mylib.c rbt.c -o out/insertion-test
-time valgrind -q ./out/insertion-test < test/insertion-test.txt > test/insertion-output.txt
-echo 
+gcc -W -Wall -O2 -ansi -pedantic -g *.c -o out/insertion-test
+time valgrind -q out/insertion-test < test/insertion-test.txt > test/insertion-output.txt
 diff test/insertion-expected.txt test/insertion-output.txt --strip-trailing-cr -s
