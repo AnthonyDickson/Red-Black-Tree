@@ -3,66 +3,71 @@
 #include "rbt.h"
 #include "mylib.h"
 
-/** MACROS *******************************************************************/
-
 #define IS_BLACK(x) ((NULL == (x) || (BLACK == (x)->colour)))
 #define IS_RED(x) ((NULL != (x) && (RED == (x)->colour)))
 
-/** ENDOF MACROS *************************************************************/
-
-/** FUNCTION DECLARATIONS ****************************************************/
-
-/**
-* Performs a left rotation on a rbt.
-* Must assign result to original rbt. E.g. rbt r = left_rotate(r);
-* @param rbt r The rbt to rotate.
-* @return The rotated rtb.
-*/
-static rbt left_rotate(rbt r);
-
-/**
-* Performs a right rotation on a rbt.
-* Must assign result to original rbt. E.g. rbt r = right_rotate(r);
-* @param rbt r The rbt to rotate.
-* @return The rotated rtb.
-*/
-static rbt right_rotate(rbt r);
-
-/**
-* Fixes any issues that violate the rules of a rbt.
-* @param rbt r The rbt to fix.
-* @return The fixed rbt.
-*/
-static rbt rbt_fix(rbt r);
-
-/** ENDOF FUNCTION DECLARATIONS **********************************************/
-
 struct rbt_node {
     char *key;
+    int count;
     rbt_colour colour;
     rbt left;
     rbt right;
 };
 
-rbt left_rotate(rbt r) {
-     rbt temp = r;
-     r = r->right;
-     temp->right = r->left;
-     r->left = temp;
-
-     return r;
+rbt rbt_new() {
+    return NULL;
 }
-    
-rbt right_rotate(rbt r) {
+
+rbt rbt_free(rbt r) {
+    if (r != NULL) {
+        r->left = rbt_free(r->left);
+        r->right = rbt_free(r->right);
+        free(r->key);
+        free(r);
+        r = NULL;
+    }    
+
+    return NULL;
+}
+
+/**
+* Performs a left rotation on a rbt.
+* Must assign the result to original rbt to have an effect.
+* E.g. rbt r = left_rotate(r)
+* @param rbt r The rbt to rotate.
+* @return The rotated rtb.
+*/
+static rbt left_rotate(rbt r) {
+    rbt temp = r;
+    r = r->right;
+    temp->right = r->left;
+    r->left = temp;
+    return r;
+}
+
+/**
+ * Performs a right rotation on a rbt.
+ * Must assign the result to original rbt to have an effect.
+ * E.g. rbt r = right_rotate(r)
+ * @param rbt r The rbt to rotate.
+ * @return The rotated rbt.
+ */
+static rbt right_rotate(rbt r) {
     rbt temp = r;
     r = r->left;
     temp->left = r->right;
     r->right = temp;
-
     return r;
 }
 
-rbt rbt_fix(rbt r) {
+/**
+ * Fixes any issues that violate the properties of a rbt.
+ * Must assign the result to original rbt to have an effect.
+ * E.g. rbt r = right_rotate(r)
+ * @param rbt r The rbt to fix.
+ * @return The fixed rbt.
+ */
+ static rbt rbt_fix(rbt r) {
     if (r == NULL) {
         return NULL;
     }
@@ -114,37 +119,42 @@ rbt rbt_fix(rbt r) {
     return r;
 }
 
-rbt rbt_new() {
-    return NULL;
-}
-
-rbt rbt_free(rbt r) {
-    if (r != NULL) {
-        rbt_free(r->left);
-        rbt_free(r->right);
-        free(r->key);
-        free(r);
-        r = NULL;
-    }    
-
-    return r;
-}
-
-rbt rbt_insert(rbt r, char *key) {
+/**
+ * A wrapper for the function rbt_insert.
+ * Should only be called by the function rbt_insert so that after the key has
+ * been inserted, rbt_insert can then ensure the root node is always black.
+ * Must assign the result to original rbt to have an effect.
+ * E.g. rbt r = rbt_insert_helper(r, key)
+ * @param rbt r The rbt to insert into.
+ * @param char *key The key to insert.
+ * @return The rbt after the key is inserted.
+ */ 
+ static rbt rbt_insert_helper(rbt r, char *key) {
     if (r == NULL) {
         r = emalloc(sizeof *r);
         r->key = emalloc(strlen(key) + 1);
         strcpy(r->key, key);
+        r->count = 1;
         r->colour = RED;
         r->left = NULL;
         r->right = NULL;
     } else if (strcmp(key, r->key) < 0) {
-        r->left = rbt_insert(r->left, key);
-    } else if (strcmp(key, r->key) > 0) {
-        r->right = rbt_insert(r->right, key);
+        r->left = rbt_insert_helper(r->left, key);
+    } else if (strcmp(key, r->key) > 0 ) {
+        r->right = rbt_insert_helper(r->right, key);
+    } else {
+        r->count++;
     }
     
     return rbt_fix(r);
+}
+
+rbt rbt_insert(rbt r, char *key) {
+    r = rbt_insert_helper(r, key);
+    /* Ensure that the root node is always coloured black. */
+    r->colour = BLACK;
+
+    return r;
 }
 
 int rbt_search(rbt r, char *key) {
@@ -162,13 +172,15 @@ int rbt_search(rbt r, char *key) {
     if (comparison > 0) {
         return rbt_search(r->right, key);
     }
-    return 1; 
+
+    return r->count; 
 }
 
 rbt rbt_delete(rbt r, char *key) {
     int comparison;
     rbt temp, successor;
-    char *swap;
+    char *swap_key;
+    int swap_count;
     
     if (r == NULL) {
         return NULL;
@@ -181,16 +193,23 @@ rbt rbt_delete(rbt r, char *key) {
     } else if (comparison > 0) {    
         r->right = rbt_delete(r->right, key);
     } else {
-        if (r->left && r->right) {
+        if (r->count > 1) {
+            r->count--;
+        } else if (r->left && r->right) {
             successor = r->right;
             
             while(successor->left) {
                 successor = successor->left;
             }
 
-            swap = r->key;
+            swap_key = r->key;
             r->key = successor->key;
-            successor->key = swap;
+            successor->key = swap_key;
+            
+            swap_count = r->count;
+            r->count = successor->count;
+            successor->count = swap_count;
+
             r->right = rbt_delete(r->right, key);
         } else if (r->left || r->right) { 
             temp = r;
@@ -204,25 +223,51 @@ rbt rbt_delete(rbt r, char *key) {
         }        
     } 
 
-    return rbt_fix(r);
+    return r;
 }
 
 void rbt_inorder(rbt r, void f(char *key, rbt_colour c)) {
+    int i;
+    
     if (r == NULL) {
         return;
     }
-
+    
     rbt_inorder(r->left, f);
-    f(r->key, r->colour);
+
+    for (i = 0; i < r->count; i++) {
+        f(r->key, r->colour);
+    }    
+
     rbt_inorder(r->right, f);
 }
 
 void rbt_preorder(rbt r, void f(char *key, rbt_colour c)) {
+    int i;
+
     if (r == NULL) {
         return;
     }
-
-    f(r->key, r->colour);
+    
+    for (i = 0; i < r->count; i++) {
+        f(r->key, r->colour);
+    }
+    
     rbt_preorder(r->left, f);
     rbt_preorder(r->right, f);
+}
+
+void rbt_postorder(rbt r, void f(char *key, rbt_colour c)) {
+    int i;
+
+    if (r == NULL) {
+        return;
+    }
+        
+    rbt_postorder(r->left, f);
+    rbt_postorder(r->right, f);
+
+    for (i = 0; i < r->count; i++) {
+        f(r->key, r->colour);
+    }
 }
