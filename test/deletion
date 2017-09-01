@@ -1,3 +1,0 @@
-gcc -W -Wall -ansi -pedantic -O2 -g *.c -o out/deletion-test
-time valgrind -q out/deletion-test < test/deletion-test.txt > test/deletion-output.txt
-diff test/deletion-expected.txt test/deletion-output.txt --strip-trailing-cr -s 
