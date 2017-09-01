@@ -234,7 +234,7 @@ void rbt_inorder(rbt r, void f(char *key, rbt_colour c)) {
     }
     
     rbt_inorder(r->left, f);
-    
+
     for (i = 0; i < r->count; i++) {
         f(r->key, r->colour);
     }    
@@ -252,6 +252,22 @@ void rbt_preorder(rbt r, void f(char *key, rbt_colour c)) {
     for (i = 0; i < r->count; i++) {
         f(r->key, r->colour);
     }
+    
     rbt_preorder(r->left, f);
     rbt_preorder(r->right, f);
+}
+
+void rbt_postorder(rbt r, void f(char *key, rbt_colour c)) {
+    int i;
+
+    if (r == NULL) {
+        return;
+    }
+        
+    rbt_postorder(r->left, f);
+    rbt_postorder(r->right, f);
+
+    for (i = 0; i < r->count; i++) {
+        f(r->key, r->colour);
+    }
 }

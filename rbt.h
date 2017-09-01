@@ -68,5 +68,13 @@ extern rbt rbt_delete(rbt r, char *key);
   * @param void f(char *key) The function to apply.
   */
 extern void rbt_preorder(rbt r, void f(char *key, rbt_colour c));
+ 
+ /** 
+  * Performs a post-order traversal of the tree and applies the given function 
+  * to each node.
+  * @param rbt r The rbt to traverse.
+  * @param void f(char *key) The function to apply.
+  */
+extern void rbt_postorder(rbt r, void f(char *key, rbt_colour c));
 
 #endif
