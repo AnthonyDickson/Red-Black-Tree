@@ -1,5 +1,9 @@
 #ifndef MYLIB_H_
 #define MYLIB_H_
+/** 
+ * mylib.h
+ * Provides various utility functions.
+ */
 
 #include <stddef.h>
 #include <stdio.h>

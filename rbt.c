@@ -3,42 +3,8 @@
 #include "rbt.h"
 #include "mylib.h"
 
-/** MACROS ******************************************************************/
-
 #define IS_BLACK(x) ((NULL == (x) || (BLACK == (x)->colour)))
 #define IS_RED(x) ((NULL != (x) && (RED == (x)->colour)))
-
-/** ENDOF MACROS ************************************************************/
-
-/** FUNCTION DECLARATIONS ***************************************************/
-
-/**
-* Performs a left rotation on a rbt.
-* Must assign result to original rbt. E.g. rbt r = left_rotate(r);
-* @param rbt r The rbt to rotate.
-* @return The rotated rtb.
-*/
-static rbt left_rotate(rbt r);
-
-/**
-* Performs a right rotation on a rbt.
-* Must assign result to original rbt. E.g. rbt r = right_rotate(r);
-* @param rbt r The rbt to rotate.
-* @return The rotated rtb.
-*/
-static rbt right_rotate(rbt r);
-
-/**
-* Fixes any issues that violate the rules of a rbt.
-* @param rbt r The rbt to fix.
-* @return The fixed rbt.
-*/
-static rbt rbt_fix(rbt r);
-
-/** ENDOF FUNCTION DECLARATIONS *********************************************/
-
-/** This is a pointer to the root node of the tree. */
-static rbt ROOT_NODE = NULL;
 
 struct rbt_node {
     char *key;
@@ -48,33 +14,60 @@ struct rbt_node {
     rbt right;
 };
 
-rbt left_rotate(rbt r) {
-     rbt temp = r;
-     r = r->right;
-     temp->right = r->left;
-     r->left = temp;
-     
-     if (ROOT_NODE == temp) {
-         ROOT_NODE = r;
-     }
-
-     return r;
+rbt rbt_new() {
+    return NULL;
 }
-    
-rbt right_rotate(rbt r) {
+
+rbt rbt_free(rbt r) {
+    if (r != NULL) {
+        r->left = rbt_free(r->left);
+        r->right = rbt_free(r->right);
+        free(r->key);
+        free(r);
+        r = NULL;
+    }    
+
+    return NULL;
+}
+
+/**
+* Performs a left rotation on a rbt.
+* Must assign the result to original rbt to have an effect.
+* E.g. rbt r = left_rotate(r)
+* @param rbt r The rbt to rotate.
+* @return The rotated rtb.
+*/
+static rbt left_rotate(rbt r) {
+    rbt temp = r;
+    r = r->right;
+    temp->right = r->left;
+    r->left = temp;
+    return r;
+}
+
+/**
+ * Performs a right rotation on a rbt.
+ * Must assign the result to original rbt to have an effect.
+ * E.g. rbt r = right_rotate(r)
+ * @param rbt r The rbt to rotate.
+ * @return The rotated rbt.
+ */
+static rbt right_rotate(rbt r) {
     rbt temp = r;
     r = r->left;
     temp->left = r->right;
     r->right = temp;
-
-    if (ROOT_NODE == temp) {
-        ROOT_NODE = r;
-    }
-
     return r;
 }
 
-rbt rbt_fix(rbt r) {
+/**
+ * Fixes any issues that violate the properties of a rbt.
+ * Must assign the result to original rbt to have an effect.
+ * E.g. rbt r = right_rotate(r)
+ * @param rbt r The rbt to fix.
+ * @return The fixed rbt.
+ */
+ static rbt rbt_fix(rbt r) {
     if (r == NULL) {
         return NULL;
     }
@@ -122,31 +115,21 @@ rbt rbt_fix(rbt r) {
             r->left->colour = RED;
         }
     }
-
-    if (r == ROOT_NODE) {
-        r->colour = BLACK;
-    }
     
     return r;
 }
 
-rbt rbt_new() {
-    return NULL;
-}
-
-rbt rbt_free(rbt r) {
-    if (r != NULL) {
-        rbt_free(r->left);
-        rbt_free(r->right);
-        free(r->key);
-        free(r);
-        r = NULL;
-    }    
-
-    return r;
-}
-
-rbt rbt_insert(rbt r, char *key) {
+/**
+ * A wrapper for the function rbt_insert.
+ * Should only be called by the function rbt_insert so that after the key has
+ * been inserted, rbt_insert can then ensure the root node is always black.
+ * Must assign the result to original rbt to have an effect.
+ * E.g. rbt r = rbt_insert_helper(r, key)
+ * @param rbt r The rbt to insert into.
+ * @param char *key The key to insert.
+ * @return The rbt after the key is inserted.
+ */ 
+ static rbt rbt_insert_helper(rbt r, char *key) {
     if (r == NULL) {
         r = emalloc(sizeof *r);
         r->key = emalloc(strlen(key) + 1);
@@ -155,19 +138,23 @@ rbt rbt_insert(rbt r, char *key) {
         r->colour = RED;
         r->left = NULL;
         r->right = NULL;
-        
-        if (ROOT_NODE == NULL) {
-            ROOT_NODE = r;
-        }
     } else if (strcmp(key, r->key) < 0) {
-        r->left = rbt_insert(r->left, key);
+        r->left = rbt_insert_helper(r->left, key);
     } else if (strcmp(key, r->key) > 0 ) {
-        r->right = rbt_insert(r->right, key);
+        r->right = rbt_insert_helper(r->right, key);
     } else {
         r->count++;
     }
     
     return rbt_fix(r);
+}
+
+rbt rbt_insert(rbt r, char *key) {
+    r = rbt_insert_helper(r, key);
+    /* Ensure that the root node is always coloured black. */
+    r->colour = BLACK;
+
+    return r;
 }
 
 int rbt_search(rbt r, char *key) {
@@ -227,18 +214,9 @@ rbt rbt_delete(rbt r, char *key) {
         } else if (r->left || r->right) { 
             temp = r;
             r = (r->left) ? r->left : r->right;
-
-            if (temp == ROOT_NODE) {
-                ROOT_NODE = r;
-            }
-
             free(temp->key);
             free(temp);                
         } else {
-            if (r == ROOT_NODE) {
-                ROOT_NODE = NULL;
-            }
-
             free(r->key);
             free(r);
             r = NULL;     

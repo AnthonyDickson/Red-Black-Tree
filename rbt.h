@@ -1,5 +1,11 @@
 #ifndef RBT_H_
 #define RBT_H_
+/** 
+ * rbt.h
+ * Defines the interface of a red-black tree.
+ * A new rbt (red-black tree) should be created like this; rbt r = rbt_new();
+ * Must free memory associated with the rbt by calling the method rbt_free.
+ */
 
 /** Defines the node colours of a rbt. */
 typedef enum {RED, BLACK} rbt_colour;
@@ -22,7 +28,7 @@ extern rbt rbt_free(rbt r);
 /**
  * Inserts a key into the rbt.
  * Must assign the result to the original rbt to have an effect. 
- * For example, rbt r = rbt_insert(r, "key");
+ * For example, rbt r = rbt_insert(r, key);
  * @param rbt r The rbt to insert into.
  * @param char *key The key to insert.
  * @return The rbt after the key is inserted.
