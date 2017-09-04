@@ -59,7 +59,7 @@ extern rbt rbt_delete(rbt r, char *key);
  * @param rbt r The rbt to traverse.
  * @param void f(char *key) The function to apply.
  */
- extern void rbt_inorder(rbt r, void f(char *key, rbt_colour c));
+ extern void rbt_inorder(rbt r, void f(char *key));
  
  /** 
   * Performs a pre-order traversal of the tree and applies the given function 
@@ -67,7 +67,7 @@ extern rbt rbt_delete(rbt r, char *key);
   * @param rbt r The rbt to traverse.
   * @param void f(char *key) The function to apply.
   */
-extern void rbt_preorder(rbt r, void f(char *key, rbt_colour c));
+extern void rbt_preorder(rbt r, void f(char *key));
  
  /** 
   * Performs a post-order traversal of the tree and applies the given function 
@@ -75,6 +75,6 @@ extern void rbt_preorder(rbt r, void f(char *key, rbt_colour c));
   * @param rbt r The rbt to traverse.
   * @param void f(char *key) The function to apply.
   */
-extern void rbt_postorder(rbt r, void f(char *key, rbt_colour c));
+extern void rbt_postorder(rbt r, void f(char *key));
 
 #endif
