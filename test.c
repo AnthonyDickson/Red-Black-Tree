@@ -3,8 +3,8 @@
 #include "mylib.h"
 #include "rbt.h"
 
-static void print_char(char *key, rbt_colour c) {
-    printf("%s: %s\n", (c == RED) ? "red" : "black", key);
+static void print_char(char *key) {
+    printf("%s\n", key);
 }
 
 int main(void) {
